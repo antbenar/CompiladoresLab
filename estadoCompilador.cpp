@@ -36,17 +36,19 @@ public:
 class Accion {
 public:
 	Gramatica *gram;
-	virtual bool sePuedeAplicar(EstadoCompilador *estado) = 0;
-	virtual bool aplica(EstadoCompilador *estado, vector<EstadoCompilador*> &chart) = 0;
+	virtual bool sePuedeAplicar(EstadoCompilador *estado, vector<string> entrada) = 0;
+	virtual bool aplica(EstadoCompilador *estado, vector<EstadoCompilador*> &chart, vector<string> entrada, map<string,string> contexto) = 0;
 	
 	Accion(Gramatica *gram_): gram(gram_){}
 };
 
 class Dummy : public Accion{
+public:
+	Dummy(Gramatica *gram_):Accion(gram){}
 	
-	bool sePuedeAplicar(EstadoCompilador *estado){return true;}
+	bool sePuedeAplicar(EstadoCompilador *estado, vector<string> entrada){return true;}
 	
-	bool aplica(EstadoCompilador *estado, vector<EstadoCompilador*> &chart){
+	bool aplica(EstadoCompilador *estado, vector<EstadoCompilador*> &chart, vector<string> entrada, map<string,string> contexto){
 		//crear origen de la gramatica
 		ProdContexto newContexto("S");
 		string prodDerecha = gram->producciones[0].izq.nombre; 
@@ -61,13 +63,15 @@ class Dummy : public Accion{
 };
 
 class Expandir : public Accion{
+public:
+	Expandir(Gramatica *gram_):Accion(gram){}
 	
-	bool sePuedeAplicar(EstadoCompilador *estado){
+	bool sePuedeAplicar(EstadoCompilador *estado, vector<string> entrada){
 		int pos = estado->posAsterico;
 		return !gram->isTerminal( estado->produccionRef->der[pos] );
 	}
 	
-	bool aplica(EstadoCompilador *estado, vector<EstadoCompilador*> &chart){
+	bool aplica(EstadoCompilador *estado, vector<EstadoCompilador*> &chart, vector<string> entrada, map<string,string> contexto){
 		
 		string izq = estado->produccionRef->der[estado->posAsterico];
 		vector<Produccion> producciones= gram->getProduccion(izq);
@@ -83,7 +87,8 @@ class Expandir : public Accion{
 
 class Unificar : public Accion
 {
-	Unificar(Gramatica *gram_): gram(gram_){}
+public:
+	Unificar(Gramatica *gram_): Accion(gram_){}
 	
 	bool sePuedeAplicar(EstadoCompilador *estado, vector<string> entrada){
 		int pos = estado->posAsterico;
@@ -117,15 +122,17 @@ class Unificar : public Accion
 
 
 class Aceptar : public Accion{
+public:
+	Aceptar(Gramatica *gram_): Accion(gram_){}
 	
-	bool sePuedeAplicar(EstadoCompilador *estado){
+	bool sePuedeAplicar(EstadoCompilador *estado, vector<string> entrada){
 		int pos = estado->posAsterico;
 		return gram->isTerminal( estado->produccionRef->der[pos] );
 	}
 	
-	bool aplica(EstadoCompilador *estado, vector<EstadoCompilador*> &chart, string entrada, map<string,string> contexto){
+	bool aplica(EstadoCompilador *estado, vector<EstadoCompilador*> &chart, vector<string> entrada, map<string,string> contexto){
 		Unificar uni(gram);
-		if(uni.sePuedeAplicar() && uni.aplica(estado, chart,entrada,contexto)){
+		if(uni.sePuedeAplicar(estado, entrada) && uni.aplica(estado, chart,entrada,contexto)){
 			estado->posAsterico++;
 			estado->posPalabra++;
 		}
