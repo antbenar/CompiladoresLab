@@ -66,6 +66,13 @@ public:
 	Produccion(ProdContexto izq_, vector<string> der_): izq(izq_), der(der_){}
 	
 	Produccion(ProdContexto izq_, string der_): izq(izq_){der.push_back(der_);}
+	void print(int asterisco=0){
+		cout << izq.nombre << "->\t";
+		for(int i=0; i<der.size();++i){
+			if(i == asterisco) cout << "* ";
+			cout << der[i] << "\t";
+		}
+	}
 };
 
 
@@ -77,7 +84,7 @@ public:
 	vector<string> terminales;
 	vector<string> noterminales;
 	
-	vector<Produccion> getProduccion(string);
+	vector<Produccion*> getProduccion(string);
 	void read(string);
 	
 	map<string,string> getContexto(string izq, string palabra);
@@ -88,31 +95,13 @@ public:
 
 
 
-vector<Produccion> Gramatica::getProduccion(string izq){
-	vector<Produccion> result;
-	ProdContexto contexto_izq = setGetContexto(izq);
+vector<Produccion*> Gramatica::getProduccion(string izq){
+	vector<Produccion*> result;
 	
 	for(int i = 0; i < producciones.size(); ++i){
-		if(producciones[i].izq.nombre == contexto_izq.nombre){
-			map<string, string> map1 = producciones[i].izq.contexto;
-			map<string, string> map2 = contexto_izq.contexto;
-			bool valido;
-			
-			for (iter it2 = map2.begin(); it2!=map2.end(); ++it2){
-				
-				valido = false;
-				for (iter it = map1.begin(); it!=map1.end(); ++it){
-					if( it->first == it2->first && it->second == it2->second){
-						valido = true;
-					}
-				}
-				if(!valido) break;
-			}
-			
-			if(valido)
-				result.push_back(producciones[i]);
+		if(producciones[i].izq.nombre == izq){
+			result.push_back(&producciones[i]);
 		}
-		
 	}
 	return result;
 }
@@ -150,13 +139,13 @@ void Gramatica::read(string texto){
 
 
 map<string,string> Gramatica::getContexto(string izq, string palabra){
-	vector<Produccion> prod = getProduccion(izq);
+	vector<Produccion*> prod = getProduccion(izq);
 	map<string,string> contextos;
 	
 	for(int i=0; prod.size(); ++i){
-		for(int j=0; prod[i].der.size(); ++j){
-			if(prod[i].der[j] == palabra)
-				return prod[i].izq.contexto;
+		for(int j=0; prod[i]->der.size(); ++j){
+			if(prod[i]->der[j] == palabra)
+				return prod[i]->izq.contexto;
 		}
 	}
 }

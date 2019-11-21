@@ -24,12 +24,14 @@ public:
 	int posAsterico;
 	int posPalabra;
 	EstadoCompilador *origen;
+	string operacion;
 	
-	EstadoCompilador(Produccion *produccionRef_, int posAsterico_, int posPalabra_, EstadoCompilador *origen_){
+	EstadoCompilador(Produccion *produccionRef_, int posAsterico_, int posPalabra_, EstadoCompilador *origen_, string operacion_){
 		produccionRef = produccionRef_;
 		posAsterico = posAsterico_;
 		posPalabra = posPalabra_;
 		origen = origen_;
+		operacion = operacion_;
 	}
 };
 
@@ -44,7 +46,7 @@ public:
 
 class Dummy : public Accion{
 public:
-	Dummy(Gramatica *gram_):Accion(gram){}
+	Dummy(Gramatica *gram_):Accion(gram_){}
 	
 	bool sePuedeAplicar(EstadoCompilador *estado, vector<string> entrada){return true;}
 	
@@ -55,7 +57,7 @@ public:
 		Produccion *pr_temp = new Produccion(newContexto, prodDerecha);
 		
 		//Inicializar estado
-		estado = new EstadoCompilador(pr_temp,0,0,nullptr);
+		estado = new EstadoCompilador(pr_temp,0,0,nullptr,"Dummy");
 		
 		//anadir al chart
 		chart.push_back(estado);
@@ -64,20 +66,21 @@ public:
 
 class Expandir : public Accion{
 public:
-	Expandir(Gramatica *gram_):Accion(gram){}
+	Expandir(Gramatica *gram_):Accion(gram_){}
 	
 	bool sePuedeAplicar(EstadoCompilador *estado, vector<string> entrada){
 		int pos = estado->posAsterico;
+		if(estado->produccionRef)estado->produccionRef->print();
+		else cout << "nulooo" << endl;
 		return !gram->isTerminal( estado->produccionRef->der[pos] );
 	}
 	
 	bool aplica(EstadoCompilador *estado, vector<EstadoCompilador*> &chart, vector<string> entrada, map<string,string> contexto){
 		
 		string izq = estado->produccionRef->der[estado->posAsterico];
-		vector<Produccion> producciones= gram->getProduccion(izq);
-		
+		vector<Produccion*> producciones= gram->getProduccion(izq);
 		for(int i = 0; i< producciones.size(); ++i){
-			EstadoCompilador *temp = new EstadoCompilador(&producciones[i], 0, estado->posPalabra, estado);
+			EstadoCompilador *temp = new EstadoCompilador(producciones[i], 0, estado->posPalabra, estado, "Expandir");
 			chart.push_back(temp);
 		}
 	}

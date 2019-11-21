@@ -38,8 +38,9 @@ int main(int argc, char *argv[]) {
 	gram->read("Sustantivo[gen=f] := ninha");
 	gram->read("Sustantivo[gen=m] := ninho");
 	//gram->read("Sustantivo[gen=m,numero=plural] := ninhos");
-	//print(gram.terminales);
-	//print(gram.noterminales);
+	//print(gram->terminales);
+	//print(gram->noterminales);
+	
 	
 	//----------reconocer oracion
 	s = "el ninho";
@@ -49,7 +50,7 @@ int main(int argc, char *argv[]) {
 	//----------crear analizador
 	
 	Analizador analizador;
-	EstadoCompilador* estado = new EstadoCompilador(nullptr,0,0,nullptr);
+	EstadoCompilador* estado = new EstadoCompilador(nullptr,0,0,nullptr,"");
 	analizador.run(estado, gram, entrada);
 	
 	return 0;
